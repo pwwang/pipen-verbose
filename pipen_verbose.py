@@ -37,7 +37,7 @@ def _format_secs(seconds: float):
 tic = 0.0
 
 @plugin.impl
-async def on_proc_init(proc):
+async def on_proc_start(proc):
     global tic
     # print some properties
     props = {}
@@ -64,16 +64,17 @@ async def on_proc_init(proc):
     tic = time()
 
 @plugin.impl
-async def on_proc_done(proc):
+async def on_proc_done(proc, succeeded):
     proc.log('info',
              'Time elapsed: %ss',
              _format_secs(time() - tic),
              logger=logger)
 
+    if succeeded:
+        return
+
     # print error info if any job failed
     failed_jobs = [job.index for job in proc.jobs if job.status == JobStatus.FAILED]
-    if not failed_jobs:
-        return
     job = proc.jobs[failed_jobs[0]]
 
     proc.log('error',
@@ -87,6 +88,12 @@ async def on_proc_done(proc):
                       else '')
             for line in stderr.splitlines():
                 job.log('error', '[red]%s[/red]', line, logger=logger)
+
+            job.log('error', '[red]-----------------------------------[/red]',
+                    logger=logger)
+            job.log('error', 'Script: %s', job.script_file, logger=logger)
+            job.log('error', 'Stdout: %s', job.stdout_file, logger=logger)
+            job.log('error', 'Stderr: %s', job.stderr_file, logger=logger)
             break
 
 @plugin.impl
