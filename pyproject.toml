@@ -20,4 +20,4 @@ requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry.plugins.pipen]
-verbose = "pipen_verbose"
+verbose = "pipen_verbose:PipenVerbose"
