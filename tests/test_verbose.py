@@ -35,10 +35,10 @@ class MultiJobProc(Proc):
     input_data = [0, 1]
 
 def test_normal(pipen, caplog):
-    pipen.run(NormalProc)
+    pipen.set_starts(NormalProc).run()
     assert "Time elapsed" in caplog.text
 
 def test_multijob(pipen, caplog):
-    pipen.run(MultiJobProc)
+    pipen.set_starts(MultiJobProc).run()
     assert "Failed jobs" in caplog.text
     assert "123" in caplog.text
