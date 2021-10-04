@@ -26,7 +26,7 @@ class NormalProc(Proc):
     input = "a"
     output = "b:{{in.a}}"
     input_data = [1]
-    args = {"x": 1}
+    envs = {"x": 1}
 
 class MultiJobProc(Proc):
     input = "a"

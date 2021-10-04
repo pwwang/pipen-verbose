@@ -12,7 +12,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
     from pipen.job import Job
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 logger = get_logger("verbose", "info")
 
@@ -75,12 +75,12 @@ class PipenVerbose:
                 "info", "%s: %s", prop.ljust(key_len), value, logger=logger
             )
         # args
-        if proc.args:
-            key_len = max(len(key) for key in proc.args) if proc.args else 0
-            for key, value in proc.args.items():
+        if proc.envs:
+            key_len = max(len(key) for key in proc.envs) if proc.envs else 0
+            for key, value in proc.envs.items():
                 proc.log(
                     "info",
-                    "args.%s: %s",
+                    "envs.%s: %s",
                     key.ljust(key_len),
                     value,
                     logger=logger,
