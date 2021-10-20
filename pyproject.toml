@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pipen-verbose"
-version = "0.0.2"
+version = "0.0.3"
 description = "Add verbosal information in logs for pipen."
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/pipen-verbose"
 
 [tool.poetry.dependencies]
 python = "^3.7.1"
-pipen = "^0.1"
+pipen = "^0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
