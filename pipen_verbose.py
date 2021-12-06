@@ -86,6 +86,10 @@ class PipenVerbose:
                     logger=logger,
                 )
 
+        # show input data on debug
+        for line in str(proc.input.data).splitlines():
+            proc.log("debug", f"indata | {line}")
+
         self.tic = time()
 
     @plugin.impl
