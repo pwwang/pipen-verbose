@@ -59,6 +59,12 @@ class PipenVerbose:
         self.tic: float = 0.0  # pragma: no cover
 
     @plugin.impl
+    def on_proc_input_computed(self, proc: "Proc"):
+        """Print input data on debug"""
+        for line in str(proc.input.data).splitlines():
+            proc.log("debug", f"indata | {line}")
+
+    @plugin.impl
     async def on_proc_start(self, proc: "Proc"):
         """Print some configuration items of the process"""
         props = {}
@@ -85,10 +91,6 @@ class PipenVerbose:
                     value,
                     logger=logger,
                 )
-
-        # show input data on debug
-        for line in str(proc.input.data).splitlines():
-            proc.log("debug", f"indata | {line}")
 
         self.tic = time()
 
