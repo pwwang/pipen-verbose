@@ -62,7 +62,7 @@ class PipenVerbose:
     def on_proc_input_computed(self, proc: "Proc"):
         """Print input data on debug"""
         for line in str(proc.input.data).splitlines():
-            proc.log("debug", f"indata | {line}")
+            proc.log("debug", f"indata | {line.replace('%', '%%')}")
 
     @plugin.impl
     async def on_proc_start(self, proc: "Proc"):
