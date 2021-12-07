@@ -7,9 +7,10 @@ Add verbosal information in logs for [pipen][1].
 - Following process properties if not `None` and different from pipeline-level configurations: `scheduler`, `lang`, `forks`, `cache`, `dirsig`, `size`, `template`
 - Ellapsed time for a process. Note that this is time ellapsed from process initialization to completion, no matter the jobs are cached or not, so this is not the real running time for the jobs.
 - Process `envs` if set.
-- The indices of failed jobs if any
+- Computed input data for processes.
+- The indices of failed jobs if any.
 - The stderr, paths to script, stdout file, stderr file, of the first failed jobs if any.
-- The input/output data of the first job
+- The input/output data of the first job.
 
 ## Installation
 
