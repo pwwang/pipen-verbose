@@ -42,3 +42,14 @@ def test_multijob(pipen, caplog):
     pipen.set_starts(MultiJobProc).run()
     assert "Failed jobs" in caplog.text
     assert "123" in caplog.text
+
+def test_path_shorten(pipen, caplog):
+    proc = Proc.from_proc(NormalProc, input_data=[
+        "/abc/def/ghi/klmn/opq",
+        "123",
+        "abcdefghijklmnopqrstuvwxyz",
+        "123/789/abcdefghijklmnopqrstuvwxyz/456",
+        "abcdefghijklmnopqrstuvwxyz/888",
+        "888/abcdefghijklmnopqrstuvwxyz",
+    ])
+    pipen.set_starts(proc).run()

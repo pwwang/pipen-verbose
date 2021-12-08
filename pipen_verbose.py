@@ -1,6 +1,7 @@
 """pipen-verbose plugin: Logging some addtitional informtion for pipen"""
 
-from typing import TYPE_CHECKING
+import os
+from typing import TYPE_CHECKING, Any
 from time import time
 from xqute import JobStatus
 from xqute.utils import a_read_text
@@ -48,6 +49,29 @@ def _format_secs(seconds: float) -> str:
     )
 
 
+def _shorten_path(path: Any, cutoff: int = 20) -> Any:
+    """Shorten the path in input data"""
+    if not isinstance(path, str):
+        return path
+    if len(path) < cutoff:
+        return path
+    if os.path.sep not in path:
+        return f"{path[:5]} ... {path[-5:]}"
+
+    parts = path.split(os.path.sep)
+    if len(parts) >= 3:
+        out = os.path.sep.join([parts[0], "..."] + parts[-2:])
+        if len(out) < cutoff:
+            return out
+        out = os.path.sep.join([parts[0], "...", parts[-1]])
+        return out
+
+    if len(parts[0]) > 3:
+        return os.path.sep.join(["...", parts[-1]])
+
+    return os.path.sep.join([parts[0], f"...{parts[-1][-5:]}"])
+
+
 class PipenVerbose:
 
     """pipen-verbose plugin: Logging some addtitional informtion for pipen"""
@@ -61,7 +85,11 @@ class PipenVerbose:
     @plugin.impl
     def on_proc_input_computed(self, proc: "Proc"):
         """Print input data on debug"""
-        for line in str(proc.input.data).splitlines():
+        data_to_show = proc.input.data.copy()
+        data_to_show = data_to_show.applymap(_shorten_path)
+        for line in data_to_show.to_string(
+            show_dimensions=True, index=False
+        ).splitlines():
             proc.log("debug", f"indata | {line.replace('%', '%%')}")
 
     @plugin.impl
@@ -161,5 +189,9 @@ class PipenVerbose:
         key_len = max(len(outp) for outp in output) if output else 0
         for inkey, inval in output.items():
             job.log(
-                "info", "out.%s: %s", inkey.ljust(key_len), inval, logger=logger
+                "info",
+                "out.%s: %s",
+                inkey.ljust(key_len),
+                inval,
+                logger=logger,
             )
