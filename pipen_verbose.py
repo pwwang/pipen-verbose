@@ -90,7 +90,8 @@ class PipenVerbose:
         for line in data_to_show.to_string(
             show_dimensions=True, index=False
         ).splitlines():
-            proc.log("debug", f"indata | {line.replace('%', '%%')}")
+            line = line.replace('%', '%%').replace('[', '\\[')
+            proc.log("debug", f"indata | {line}")
 
     @plugin.impl
     async def on_proc_start(self, proc: "Proc"):
