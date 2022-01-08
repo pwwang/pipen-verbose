@@ -142,6 +142,10 @@ class PipenVerbose:
         failed_jobs = [
             job.index for job in proc.jobs if job.status == JobStatus.FAILED
         ]
+        if not failed_jobs:
+            # could be triggered by Ctrl+C and all jobs are running
+            return
+
         job = proc.jobs[failed_jobs[0]]
 
         proc.log(
