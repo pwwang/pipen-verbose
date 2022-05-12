@@ -142,7 +142,7 @@ class PipenVerbose:
         failed_jobs = [
             job.index for job in proc.jobs if job.status == JobStatus.FAILED
         ]
-        if not failed_jobs:
+        if not failed_jobs:  # pragma: no cover
             # could be triggered by Ctrl+C and all jobs are running
             return
 
