@@ -113,13 +113,46 @@ class PipenVerbose:
         if proc.envs:
             key_len = max(len(key) for key in proc.envs) if proc.envs else 0
             for key, value in proc.envs.items():
+                value = [
+                    line
+                    if i == 0
+                    else f"{' ' * (len(proc.name) + key_len + 17)}{line}"
+                    for i, line in enumerate(
+                        str(value)
+                        .replace('%', '%%')
+                        .replace('[', '\\[')
+                        .splitlines()
+                    )
+                ]
+
                 proc.log(
                     "info",
                     "envs.%s: %s",
                     key.ljust(key_len),
-                    str(value).replace('%', '%%').replace('[', '\\['),
+                    "\n".join(value),
                     logger=logger,
                 )
+
+        job = proc.jobs[0]
+        # input
+        input = job.input
+        key_len = max(len(inp) for inp in input) if input else 0
+        for inkey, inval in input.items():
+            job.log(
+                "info", "in.%s: %s", inkey.ljust(key_len), inval, logger=logger
+            )
+
+        # output
+        output = job.output
+        key_len = max(len(outp) for outp in output) if output else 0
+        for inkey, inval in output.items():
+            job.log(
+                "info",
+                "out.%s: %s",
+                inkey.ljust(key_len),
+                inval,
+                logger=logger,
+            )
 
         self.tic = time()
 
@@ -173,30 +206,3 @@ class PipenVerbose:
                 job.log("error", "Stdout: %s", job.stdout_file, logger=logger)
                 job.log("error", "Stderr: %s", job.stderr_file, logger=logger)
                 break
-
-    @plugin.impl
-    async def on_job_init(self, proc: "Proc", job: "Job") -> None:
-        """Print input and output for the first job"""
-        # print input/output for the first job
-        if job.index != 0:
-            return
-
-        # input
-        input = job.input
-        key_len = max(len(inp) for inp in input) if input else 0
-        for inkey, inval in input.items():
-            job.log(
-                "info", "in.%s: %s", inkey.ljust(key_len), inval, logger=logger
-            )
-
-        # output
-        output = job.output
-        key_len = max(len(outp) for outp in output) if output else 0
-        for inkey, inval in output.items():
-            job.log(
-                "info",
-                "out.%s: %s",
-                inkey.ljust(key_len),
-                inval,
-                logger=logger,
-            )
