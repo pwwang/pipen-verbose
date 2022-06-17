@@ -28,6 +28,12 @@ class NormalProc(Proc):
     input_data = [1]
     envs = {"x": 1}
 
+class EnvsSquareBracketsProc(Proc):
+    input = "a"
+    output = "b:{{in.a}}"
+    input_data = [1]
+    envs = {"x": "[a]\nb=1\n"}
+
 class MultiJobProc(Proc):
     input = "a"
     output = "b:{{in.a}}"
@@ -42,6 +48,12 @@ def test_multijob(pipen, caplog):
     pipen.set_starts(MultiJobProc).run()
     assert "Failed jobs" in caplog.text
     assert "123" in caplog.text
+
+def test_envs_square_brackets(pipen, caplog):
+    proc = Proc.from_proc(EnvsSquareBracketsProc, input_data=[1])
+    pipen.set_starts(proc).run()
+    print(caplog.text)
+    assert "envs.x: \\[a]\nb=1\n" in caplog.text
 
 def test_path_shorten(pipen, caplog):
     proc = Proc.from_proc(NormalProc, input_data=[

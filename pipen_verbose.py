@@ -117,7 +117,7 @@ class PipenVerbose:
                     "info",
                     "envs.%s: %s",
                     key.ljust(key_len),
-                    value,
+                    str(value).replace('%', '%%').replace('[', '\\['),
                     logger=logger,
                 )
 
