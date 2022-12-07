@@ -11,7 +11,6 @@ from pipen.utils import get_logger, brief_list
 
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
-    from pipen.job import Job
 
 __version__ = "0.1.1"
 
