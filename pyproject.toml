@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/pipen-verbose"
 
 [tool.poetry.dependencies]
 python = "^3.7.1"
-pipen = "^0.6"
+pipen = "^0.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7"
