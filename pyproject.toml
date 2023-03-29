@@ -12,6 +12,9 @@ repository = "https://github.com/pwwang/pipen-verbose"
 python = "^3.7.1"
 pipen = "^0.7"
 
+[tool.poetry.build]
+generate-setup-file = true
+
 [tool.poetry.dev-dependencies]
 pytest = "^7"
 pytest-cov = "^4"
