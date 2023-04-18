@@ -53,7 +53,7 @@ Pipen().run(Process)
 [09/12/21 22:57:01] I main    ║  # procs          = 1                                              ║
 [09/12/21 22:57:01] I main    ║  plugins          = ['main', 'verbose-0.0.1']                      ║
 [09/12/21 22:57:01] I main    ║  profile          = default                                        ║
-[09/12/21 22:57:01] I main    ║  outdir           = pipen-0_results                                ║
+[09/12/21 22:57:01] I main    ║  outdir           = ./Pipen-output                                 ║
 [09/12/21 22:57:01] I main    ║  cache            = True                                           ║
 [09/12/21 22:57:01] I main    ║  dirsig           = 1                                              ║
 [09/12/21 22:57:01] I main    ║  error_strategy   = ignore                                         ║
@@ -81,7 +81,7 @@ Pipen().run(Process)
 [09/12/21 22:57:02] I verbose Process: size : 10
 [09/12/21 22:57:02] I verbose Process: [0/9] in.a: 0
 [09/12/21 22:57:02] I verbose Process: [0/9] out.b:
-                      /home/pwwang/github/pipen-verbose/pipen-0_results/Process/0/a.txt
+                      /home/pwwang/github/pipen-verbose/Pipen-output/Process/0/a.txt
 [09/12/21 22:57:04] I verbose Process: Time elapsed: 00:00:02.043s
 [09/12/21 22:57:04] I main
 ```
