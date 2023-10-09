@@ -85,7 +85,11 @@ class PipenVerbose:
     def on_proc_input_computed(self, proc: "Proc"):
         """Print input data on debug"""
         data_to_show = proc.input.data.copy()
-        data_to_show = data_to_show.applymap(_shorten_path)
+        if hasattr(data_to_show, "map"):  # pandas 2.1
+            data_to_show = data_to_show.map(_shorten_path)
+        else:
+            data_to_show = data_to_show.applymap(_shorten_path)
+            
         for line in data_to_show.to_string(
             show_dimensions=True, index=False
         ).splitlines():
