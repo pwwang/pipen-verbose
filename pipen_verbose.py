@@ -12,7 +12,7 @@ from pipen.utils import get_logger, brief_list
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 logger = get_logger("verbose", "info")
 
@@ -85,11 +85,12 @@ class PipenVerbose:
     def on_proc_input_computed(self, proc: "Proc"):
         """Print input data on debug"""
         data_to_show = proc.input.data.copy()
-        if hasattr(data_to_show, "map"):  # pandas 2.1
+        if hasattr(data_to_show, "map"):  # pragma: no cover
+            # pandas 2.1
             data_to_show = data_to_show.map(_shorten_path)
         else:
             data_to_show = data_to_show.applymap(_shorten_path)
-            
+
         for line in data_to_show.to_string(
             show_dimensions=True, index=False
         ).splitlines():
