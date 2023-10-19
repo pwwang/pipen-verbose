@@ -12,7 +12,7 @@ from pipen.utils import get_logger, brief_list
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
 
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 
 logger = get_logger("verbose", "info")
 
