@@ -88,7 +88,7 @@ class PipenVerbose:
         if hasattr(data_to_show, "map"):  # pragma: no cover
             # pandas 2.1
             data_to_show = data_to_show.map(_shorten_path)
-        else:
+        else:  # pragma: no cover
             data_to_show = data_to_show.applymap(_shorten_path)
 
         for line in data_to_show.to_string(
@@ -183,30 +183,24 @@ class PipenVerbose:
             # could be triggered by Ctrl+C and all jobs are running
             return
 
-        job = proc.jobs[failed_jobs[0]]
-
         proc.log(
             "error",
             "[red]Failed jobs: %s[/red]",
             brief_list(failed_jobs),
             logger=logger,
         )
-        for job in proc.jobs:
-            if job.status == JobStatus.FAILED:
-                stderr = (
-                    await a_read_text(job.stderr_file)
-                    if job.stderr_file.is_file()
-                    else ""
-                )
-                for line in stderr.splitlines():
-                    job.log("error", "[red]%s[/red]", line, logger=logger)
 
-                job.log(
-                    "error",
-                    "[red]-----------------------------------[/red]",
-                    logger=logger,
-                )
-                job.log("error", "Script: %s", job.script_file, logger=logger)
-                job.log("error", "Stdout: %s", job.stdout_file, logger=logger)
-                job.log("error", "Stderr: %s", job.stderr_file, logger=logger)
-                break
+        job = proc.jobs[failed_jobs[0]]
+        stderr = (
+            await a_read_text(job.stderr_file)
+            if job.stderr_file.is_file()
+            else ""
+        )
+        kwargs = {"limit": job.index + 1, "logger": logger}
+        for line in stderr.splitlines():
+            job.log("error", "[red]%s[/red]", line, **kwargs)
+
+        job.log("error", "[red]-----------------------------------[/red]", **kwargs)
+        job.log("error", "Script: %s", job.script_file, **kwargs)
+        job.log("error", "Stdout: %s", job.stdout_file, **kwargs)
+        job.log("error", "Stderr: %s", job.stderr_file, **kwargs)
