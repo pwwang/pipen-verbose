@@ -49,17 +49,18 @@ def test_normal(pipen, caplog):
     assert "Time elapsed" in caplog.text
 
 
-# @pytest.mark.forked
-# def test_cached_procs_showing_input_output(pipen, caplog):
-#     class NormalProcCaching(NormalProc):
-#         cache = True
+def test_cached_procs_showing_input_output(pipen, caplog):
+    class NormalProcCaching(NormalProc):
+        cache = True
 
-#     pipen.set_starts(NormalProcCaching).run()
-#     assert "Time elapsed" in caplog.text
-#     caplog.clear()
-#     pipen.set_starts(NormalProcCaching).run()
-#     assert "in.a: 1" in caplog.text
-#     assert "out.b: 1" in caplog.text
+    pipen.set_starts(NormalProcCaching).run()
+    assert "Time elapsed" in caplog.text
+    caplog.clear()
+    pipen.set_starts(NormalProcCaching).run()
+    assert "in.a: 1" in caplog.text
+    assert "out.b: 1" in caplog.text
+
+
 def test_multijob(pipen, caplog):
     pipen.set_starts(MultiJobProc).run()
     assert "Failed jobs" in caplog.text
@@ -69,7 +70,8 @@ def test_multijob(pipen, caplog):
 def test_envs_square_brackets(pipen, caplog):
     proc = Proc.from_proc(EnvsSquareBracketsProc, input_data=[1])
     pipen.set_starts(proc).run()
-    assert "envs.x: \\[a]\n                      b=1\n" in caplog.text
+    assert "[cyan]proc:[/cyan] envs.x: \\[a]" in caplog.text
+    assert "[cyan]proc:[/cyan]         b=1" in caplog.text
 
 
 def test_path_shorten(pipen, caplog):
