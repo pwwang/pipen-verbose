@@ -140,12 +140,13 @@ def _(value: str, key: str, key_len: int) -> List[str]:
 
 
 @_format_value.register(MountedPath)
+@_format_value.register(CloudPath)
 def _(value: MountedPath, key: str, key_len: int) -> List[str]:
     """Format the value of MountedPath"""
     strfmt = _format_value.dispatch(str)
     out = strfmt(str(value), key, key_len)
 
-    if value.spec and value.spec != value:
+    if hasattr(value, "spec") and value.spec != value:
         out.extend(strfmt(str(value.spec), f"{key}.spec", key_len))
 
     return out
