@@ -13,17 +13,17 @@ files = [
 
 [[package]]
 name = "argx"
-version = "0.3.0"
+version = "0.3.1"
 description = "Super-charged argparse for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "argx-0.3.0-py3-none-any.whl", hash = "sha256:8a5d360cc3ce65800cf108c8ac5d458882654df18deb4868b148487c20ff6818"},
-    {file = "argx-0.3.0.tar.gz", hash = "sha256:261369b1f82cf2713581a7078ecad5e6331f443bc16372e95ad95a81c2e7ad79"},
+    {file = "argx-0.3.1-py3-none-any.whl", hash = "sha256:2e57e4a8ce1dd60c1ed8535523e1feb19308561e99144173f50078e6da6d729c"},
+    {file = "argx-0.3.1.tar.gz", hash = "sha256:dbb84a2dedfef40e79a05222d4c2926856b61e0fb52f39cfcf1bd04a5fcb8eaa"},
 ]
 
 [package.dependencies]
-python-simpleconf = ">=0.6,<0.7"
+python-simpleconf = ">=0.7,<0.8"
 
 [[package]]
 name = "blessed"
@@ -618,13 +618,13 @@ executing = ">=2.0,<3.0"
 
 [[package]]
 name = "pipen"
-version = "0.16.0a2"
+version = "0.16.0a6"
 description = "A pipeline framework for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pipen-0.16.0a2-py3-none-any.whl", hash = "sha256:171ccccb965d95aa9feae267393c64c442acc0172fe14a194ba74e4ecdb0bf2f"},
-    {file = "pipen-0.16.0a2.tar.gz", hash = "sha256:94b40c4dc1aed06f45964ed9fbb5e104bbc449e48c8246b4a367fc2dded3ce11"},
+    {file = "pipen-0.16.0a6-py3-none-any.whl", hash = "sha256:d8cc141bcf5b854db27f94a27955ca378b9f3ce7c0ecaf5bdff4cc6724a8270b"},
+    {file = "pipen-0.16.0a6.tar.gz", hash = "sha256:88b52d596611bec3f33fe7e68e3b25b22815f0040d184170d256bb6f6417a222"},
 ]
 
 [package.dependencies]
@@ -633,7 +633,7 @@ enlighten = ">=1,<2"
 liquidpy = ">=0.8.3,<0.9.0"
 pandas = ">=2.0,<3.0"
 pipda = ">=0.13,<0.14"
-python-simpleconf = {version = ">=0.6.2,<0.7.0", extras = ["toml"]}
+python-simpleconf = {version = ">=0.7,<0.8", extras = ["toml"]}
 varname = ">=0.14,<0.15"
 xqute = ">=0.8,<0.9"
 
@@ -679,13 +679,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -733,13 +733,13 @@ six = ">=1.5"
 
 [[package]]
 name = "python-simpleconf"
-version = "0.6.2"
+version = "0.7.0"
 description = "Simple configuration management with python."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "python_simpleconf-0.6.2-py3-none-any.whl", hash = "sha256:72f04053d570a3eec35d084a99683e1d46520a1b13d5a896b2c7ed805745a407"},
-    {file = "python_simpleconf-0.6.2.tar.gz", hash = "sha256:3f0aee5fdabf55c63755cb47c42920ba3bb35072cecf97ab0b963b1d9e1e5eaf"},
+    {file = "python_simpleconf-0.7.0-py3-none-any.whl", hash = "sha256:16cd75940a4a5b8776f482fdfc1a3708ad598ff6b236e3bb1edbf2362fbef663"},
+    {file = "python_simpleconf-0.7.0.tar.gz", hash = "sha256:fef742e3dee861d20bf591e6e7515c2744b326b201a84c373f86628564bc3f59"},
 ]
 
 [package.dependencies]

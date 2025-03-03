@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Mapping
 from pprint import pformat
 from functools import singledispatch
 from time import time
+from yunpath import CloudPath
 from xqute import JobStatus
 from xqute.path import MountedPath
 
@@ -15,7 +16,7 @@ from pipen.utils import get_logger, brief_list
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
 
-__version__ = "0.13.0a1"
+__version__ = "0.13.0a2"
 
 logger = get_logger("verbose", "info")
 
