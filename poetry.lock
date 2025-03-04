@@ -618,13 +618,13 @@ executing = ">=2.0,<3.0"
 
 [[package]]
 name = "pipen"
-version = "0.16.0a6"
+version = "0.16.0"
 description = "A pipeline framework for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pipen-0.16.0a6-py3-none-any.whl", hash = "sha256:d8cc141bcf5b854db27f94a27955ca378b9f3ce7c0ecaf5bdff4cc6724a8270b"},
-    {file = "pipen-0.16.0a6.tar.gz", hash = "sha256:88b52d596611bec3f33fe7e68e3b25b22815f0040d184170d256bb6f6417a222"},
+    {file = "pipen-0.16.0-py3-none-any.whl", hash = "sha256:0a824bf416469bea6957432647ef9e4342786dba01b2657aa183e22ceef9f607"},
+    {file = "pipen-0.16.0.tar.gz", hash = "sha256:5343fd3178ffe8716ab71426fbda9087bce202c0dade78003aa231875f0fa8c7"},
 ]
 
 [package.dependencies]
@@ -701,17 +701,17 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments
 
 [[package]]
 name = "pytest-cov"
-version = "5.0.0"
+version = "6.0.0"
 description = "Pytest plugin for measuring coverage."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "pytest-cov-5.0.0.tar.gz", hash = "sha256:5837b58e9f6ebd335b0f8060eecce69b662415b16dc503883a02f45dfeb14857"},
-    {file = "pytest_cov-5.0.0-py3-none-any.whl", hash = "sha256:4f0764a1219df53214206bf1feea4633c3b558a2925c8b59f144f682861ce652"},
+    {file = "pytest-cov-6.0.0.tar.gz", hash = "sha256:fde0b595ca248bb8e2d76f020b465f3b107c9632e6a1d1705f17834c89dcadc0"},
+    {file = "pytest_cov-6.0.0-py3-none-any.whl", hash = "sha256:eee6f1b9e61008bd34975a4d5bab25801eb31898b032dd55addc93e96fcaaa35"},
 ]
 
 [package.dependencies]
-coverage = {version = ">=5.2.1", extras = ["toml"]}
+coverage = {version = ">=7.5", extras = ["toml"]}
 pytest = ">=4.6"
 
 [package.extras]
@@ -1026,13 +1026,13 @@ files = [
 
 [[package]]
 name = "xqute"
-version = "0.8.0"
+version = "0.8.1"
 description = "A job management system for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "xqute-0.8.0-py3-none-any.whl", hash = "sha256:ea0ba79131a0374d1561bfea430ea49e623e2eaa755971ca43be157b461aa3b5"},
-    {file = "xqute-0.8.0.tar.gz", hash = "sha256:b16dc828cc9ae9446829ab97314b53d26b0aa1eafdf5d7fd594e4ae945840f4f"},
+    {file = "xqute-0.8.1-py3-none-any.whl", hash = "sha256:dc8b98595e8cd96965e05640adc816d34a9d80e9603d9d1682749fa75950a40c"},
+    {file = "xqute-0.8.1.tar.gz", hash = "sha256:98797770cb33a0af5de3eadfe0810fb2520d0d1ee3679beaabede042f306cbd0"},
 ]
 
 [package.dependencies]
@@ -1064,4 +1064,4 @@ cloudpathlib = ">=0.20.0,<0.21.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "512ee2ebf66339a0010e947bfd660dfd016c22524c602ad3730b7a5300923b26"
+content-hash = "f770f36ee2b68b29094ad7f2429692e816e2c6975cf0de42300a4e29a75ee19f"
