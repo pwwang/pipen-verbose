@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Mapping
+from typing import TYPE_CHECKING, Any, Callable, List, Mapping, TypeVar
 from pprint import pformat
+from pathlib import Path
 from functools import singledispatch
 from time import time
 from yunpath import CloudPath
 from xqute import JobStatus
-from xqute.path import MountedPath
 
 from pipen import plugin
-from pipen.utils import get_logger, brief_list
+from pipen.utils import get_logger, brief_list, logger_console
 
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
@@ -19,7 +19,7 @@ if TYPE_CHECKING:  # pragma: no cover
 __version__ = "0.13.0"
 
 logger = get_logger("verbose", "info")
-
+T = TypeVar("T", list, tuple, set)
 VERBOSAL_CONFIGS = {
     # name: getter
     "scheduler": lambda proc: proc.scheduler.name,
@@ -88,26 +88,60 @@ def _(value: str, len_cutoff: int = 20) -> str:
     return "/".join([parts[0], f"...{parts[-1][-5:]}"])
 
 
-@_shorten_value.register(MountedPath)
-def _(value: MountedPath, len_cutoff: int = 20) -> str:
-    """Format the value of MountedPath"""
+@_shorten_value.register(Path)
+@_shorten_value.register(CloudPath)
+def _(value: Path | CloudPath, len_cutoff: int = 20) -> str:
+    """Format the value of Path or CloudPath"""
     fmtfn = _shorten_value.dispatch(str)
 
-    if value.spec and value.spec == value:
+    if not _is_mounted_path(value):
         return fmtfn(str(value), len_cutoff)
 
     part1 = fmtfn(str(value.spec), len_cutoff)
     part2 = fmtfn(str(value), len_cutoff)
-    return f"{part1}:{part2}"
+    return f"{part2} \u2190 {part1}"
 
 
 def _is_mounted_path(path: Any) -> bool:
     """Check if the path is a mounted path"""
-    return isinstance(path, MountedPath) and path.spec and path.spec != path
+    return (
+        isinstance(path, (Path, CloudPath))
+        and hasattr(path, "spec")
+        and path.spec != path
+    )
 
 
 @singledispatch
-def _format_value(value, key: str, key_len: int) -> List[str]:
+def _format_atomic_value(value: Any) -> str:
+    """Format the atomic value"""
+    return value
+
+
+@_format_atomic_value.register(Path)
+@_format_atomic_value.register(CloudPath)
+def _(value: Path | CloudPath) -> str:
+    """Format the value of MountedPath"""
+    if _is_mounted_path(value):
+        return f"{value} \u2190 {value.spec}"
+
+    return str(value)
+
+
+@_format_atomic_value.register(list)
+@_format_atomic_value.register(tuple)
+@_format_atomic_value.register(set)
+def _(value: T) -> T:
+    """Format the value of list, tuple or set"""
+    return value.__class__((_format_atomic_value(v) for v in value))
+
+
+@_format_atomic_value.register(dict)
+def _(value: dict) -> dict:
+    """Format the value of dict"""
+    return {k: _format_atomic_value(v) for k, v in value.items()}
+
+
+def _format_value(value, key: str, key_len: int, procname_len: int) -> List[str]:
     """Format the value to a string or a list of strings to be logged
 
     Args:
@@ -118,13 +152,17 @@ def _format_value(value, key: str, key_len: int) -> List[str]:
     Returns:
         The formatted value, which is a list of strings
     """
-    return _format_value.dispatch(str)(pformat(value), key, key_len)
-
-
-@_format_value.register(str)
-def _(value: str, key: str, key_len: int) -> List[str]:
-    """Format the value of str"""
+    value = _format_atomic_value(value)
     out = []
+
+    if not isinstance(value, str):
+        value = pformat(
+            value,
+            compact=True,
+            # The time, level and : will take 27 characters
+            width=logger_console._width - procname_len - key_len - 27,
+            sort_dicts=False,
+        )
 
     if "\n" in value:
         for i, line in enumerate(value.splitlines()):
@@ -140,33 +178,19 @@ def _(value: str, key: str, key_len: int) -> List[str]:
     return out
 
 
-@_format_value.register(MountedPath)
-@_format_value.register(CloudPath)
-def _(value: MountedPath, key: str, key_len: int) -> List[str]:
-    """Format the value of MountedPath"""
-    strfmt = _format_value.dispatch(str)
-    out = strfmt(str(value), key, key_len)
-
-    if hasattr(value, "spec") and value.spec != value:
-        out.extend(strfmt(str(value.spec), f"{key}.spec", key_len))
-
-    return out
-
-
 def _log_values(
     values: Mapping[str, Any] | None,
     log_fn: Callable,
+    procname_len: int,
     prefix: str = "",
     level: str = "info",
 ) -> None:
     """Log the values"""
     key_len = max(len(key) for key in values) if values else 0
-    if any(_is_mounted_path(value) for value in values.values()):
-        key_len += 5  # .spec
     key_len += len(prefix)
 
     for key, value in values.items():
-        for formatted in _format_value(value, f"{prefix}{key}", key_len):
+        for formatted in _format_value(value, f"{prefix}{key}", key_len, procname_len):
             log_fn(level, formatted, logger=logger)
 
 
@@ -192,6 +216,7 @@ class PipenVerbose:
         _log_values(
             {"indata": data_to_show.to_string(show_dimensions=True, index=False)},
             proc.log,
+            len(proc.name),
             level="debug",
         )
 
@@ -206,21 +231,24 @@ class PipenVerbose:
             if value is not None and value != proc.pipeline.config.get(prop, None):
                 props[prop] = value
 
-        _log_values(props, proc.log, prefix="")
+        _log_values(props, proc.log, len(proc.name), prefix="")
 
         # printing the process envs
         # ---------------------------------
-        _log_values(proc.envs, proc.log, prefix="envs.")
+        _log_values(proc.envs, proc.log, len(proc.name), prefix="envs.")
 
         job = proc.jobs[0]
+        # [01/10] in.infile
+        # ^^^^^^^^
+        jobindex_len = len(str(len(proc.jobs) - 1)) * 2 + 4
         # printing the process input
         # ---------------------------------
-        _log_values(job.input, job.log, prefix="in.")
+        _log_values(job.input, job.log, len(proc.name) + jobindex_len, prefix="in.")
 
         # printing the process output
         # ---------------------------------
         output = job.output
-        _log_values(output, job.log, prefix="out.")
+        _log_values(output, job.log, len(proc.name) + jobindex_len, prefix="out.")
 
         self.tic = time()
 
@@ -253,9 +281,7 @@ class PipenVerbose:
         )
 
         job = proc.jobs[failed_jobs[0]]
-        stderr = (
-            job.stderr_file.read_text() if job.stderr_file.is_file() else ""
-        )
+        stderr = job.stderr_file.read_text() if job.stderr_file.is_file() else ""
         kwargs = {"limit": job.index + 1, "logger": logger}
         for line in stderr.splitlines():
             job.log("error", "[red]%s[/red]", line, **kwargs)

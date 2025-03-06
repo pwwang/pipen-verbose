@@ -1,8 +1,10 @@
 import pytest  # noqkey: F401
 
+from pathlib import Path
 from xqute.path import DualPath
 from pipen_verbose import (
     _format_secs,
+    _format_atomic_value,
     _shorten_value,
     _is_mounted_path,
     _format_value,
@@ -23,7 +25,10 @@ from pipen_verbose import (
         (123, "123"),
         # MountedPath
         (DualPath("/abc/def/ghi/klmn/opq").mounted, "/.../klmn/opq"),
-        (DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted, "/.../klmn/opq:abc"),
+        (
+            DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
+            "abc ← /.../klmn/opq",
+        ),
     ],
 )
 def test_shorten_value(value, expected):
@@ -56,6 +61,53 @@ def test_format_secs(secs, expected):
 
 
 @pytest.mark.parametrize(
+    "value,expected",
+    [
+        # Simple values
+        ("abc", "abc"),
+        (123, 123),
+        (True, True),
+        (None, None),
+        # MountedPath
+        (DualPath("/abc/def").mounted, "/abc/def"),
+        (DualPath("/abc/def", mounted="abc").mounted, "abc ← /abc/def"),
+        # List
+        ([1, 2, 3], [1, 2, 3]),
+        (
+            ["abc", DualPath("/abc/def", mounted="abc").mounted],
+            ["abc", "abc ← /abc/def"],
+        ),
+        # Tuple
+        ((1, 2, 3), (1, 2, 3)),
+        (
+            ("abc", DualPath("/abc/def", mounted="abc").mounted),
+            ("abc", "abc ← /abc/def"),
+        ),
+        # Set
+        ({1, 2, 3}, {1, 2, 3}),
+        # Can't reliably test sets with DualPath due to ordering
+        # Dict
+        ({"a": 1, "b": 2}, {"a": 1, "b": 2}),
+        (
+            {
+                "a": DualPath("/abc/def", mounted="abc").mounted,
+                "b": [1, DualPath("/123", mounted="xyz").mounted],
+            },
+            {"a": "abc ← /abc/def", "b": [1, "xyz ← /123"]},
+        ),
+        # Nested
+        (
+            {"a": [1, {"b": DualPath("/path", mounted="mount").mounted}]},
+            {"a": [1, {"b": "mount ← /path"}]},
+        ),
+    ],
+)
+def test_format_atomic_value(value, expected):
+    result = _format_atomic_value(value)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
     "value,key,key_len,expected",
     [
         ("/abc/def/ghi/klmn/opq", "key", 3, ["key: /abc/def/ghi/klmn/opq"]),
@@ -80,12 +132,32 @@ def test_format_secs(secs, expected):
             DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
             "key",
             9,
-            ["key      : abc", "key.spec : /abc/def/ghi/klmn/opq"],
+            ["key      : abc ← /abc/def/ghi/klmn/opq"],
+        ),
+        (
+            [DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted, 1],
+            "key",
+            9,
+            ["key      : \\['abc ← /abc/def/ghi/klmn/opq', 1]"],
+        ),
+        (
+            {
+                "a": DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
+                "b": 1,
+                "c": DualPath("/abc/def/ghi/klmn/opq").mounted,
+                "def": Path("/rst/uvw/xyz"),
+            },
+            "key",
+            9,
+            [
+                "key      : {'a': 'abc ← /abc/def/ghi/klmn/opq', 'b': 1, "
+                "'c': '/abc/def/ghi/klmn/opq', 'def': '/rst/uvw/xyz'}"
+            ],
         ),
     ],
 )
 def test_format_value(value, key, key_len, expected):
-    assert _format_value(value, key, key_len) == expected
+    assert _format_value(value, key, key_len, 0) == expected
 
 
 def test_log_values(capsys):
@@ -97,9 +169,8 @@ def test_log_values(capsys):
         "b": "def",
         "c": DualPath("/abc/def", mounted="/ghi/jkl").mounted,
     }
-    _log_values(values, log_fn, prefix="x.")
+    _log_values(values, log_fn, 0, prefix="x.")
     captured = capsys.readouterr().out
-    assert "info: x.a     : abc" in captured
-    assert "info: x.b     : def" in captured
-    assert "info: x.c     : /ghi/jkl" in captured
-    assert "info: x.c.spec: /abc/def" in captured
+    assert "info: x.a: abc" in captured
+    assert "info: x.b: def" in captured
+    assert "info: x.c: /ghi/jkl ← /abc/def" in captured
