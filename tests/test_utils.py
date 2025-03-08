@@ -1,7 +1,7 @@
 import pytest  # noqkey: F401
 
 from pathlib import Path
-from xqute.path import DualPath
+from xqute.path import SpecPath
 from pipen_verbose import (
     _format_secs,
     _format_atomic_value,
@@ -24,9 +24,9 @@ from pipen_verbose import (
         # not a str
         (123, "123"),
         # MountedPath
-        (DualPath("/abc/def/ghi/klmn/opq").mounted, "/.../klmn/opq"),
+        (SpecPath("/abc/def/ghi/klmn/opq").mounted, "/.../klmn/opq"),
         (
-            DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
+            SpecPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
             "abc ← /.../klmn/opq",
         ),
     ],
@@ -36,9 +36,9 @@ def test_shorten_value(value, expected):
 
 
 def test_is_mounted_path():
-    assert _is_mounted_path(DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted)
-    assert not _is_mounted_path(DualPath("/abc/def/ghi/klmn/opq").mounted)
-    assert not _is_mounted_path(DualPath("/abc/def/ghi/klmn/opq"))
+    assert _is_mounted_path(SpecPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted)
+    assert not _is_mounted_path(SpecPath("/abc/def/ghi/klmn/opq").mounted)
+    assert not _is_mounted_path(SpecPath("/abc/def/ghi/klmn/opq"))
     assert not _is_mounted_path("/abc/def/ghi/klmn/opq")
     assert not _is_mounted_path(123)
 
@@ -69,35 +69,35 @@ def test_format_secs(secs, expected):
         (True, True),
         (None, None),
         # MountedPath
-        (DualPath("/abc/def").mounted, "/abc/def"),
-        (DualPath("/abc/def", mounted="abc").mounted, "abc ← /abc/def"),
+        (SpecPath("/abc/def").mounted, "/abc/def"),
+        (SpecPath("/abc/def", mounted="abc").mounted, "abc ← /abc/def"),
         # List
         ([1, 2, 3], [1, 2, 3]),
         (
-            ["abc", DualPath("/abc/def", mounted="abc").mounted],
+            ["abc", SpecPath("/abc/def", mounted="abc").mounted],
             ["abc", "abc ← /abc/def"],
         ),
         # Tuple
         ((1, 2, 3), (1, 2, 3)),
         (
-            ("abc", DualPath("/abc/def", mounted="abc").mounted),
+            ("abc", SpecPath("/abc/def", mounted="abc").mounted),
             ("abc", "abc ← /abc/def"),
         ),
         # Set
         ({1, 2, 3}, {1, 2, 3}),
-        # Can't reliably test sets with DualPath due to ordering
+        # Can't reliably test sets with SpecPath due to ordering
         # Dict
         ({"a": 1, "b": 2}, {"a": 1, "b": 2}),
         (
             {
-                "a": DualPath("/abc/def", mounted="abc").mounted,
-                "b": [1, DualPath("/123", mounted="xyz").mounted],
+                "a": SpecPath("/abc/def", mounted="abc").mounted,
+                "b": [1, SpecPath("/123", mounted="xyz").mounted],
             },
             {"a": "abc ← /abc/def", "b": [1, "xyz ← /123"]},
         ),
         # Nested
         (
-            {"a": [1, {"b": DualPath("/path", mounted="mount").mounted}]},
+            {"a": [1, {"b": SpecPath("/path", mounted="mount").mounted}]},
             {"a": [1, {"b": "mount ← /path"}]},
         ),
     ],
@@ -123,28 +123,28 @@ def test_format_atomic_value(value, expected):
         (123, "key", 3, ["key: 123"]),
         # MountedPath
         (
-            DualPath("/abc/def/ghi/klmn/opq").mounted,
+            SpecPath("/abc/def/ghi/klmn/opq").mounted,
             "key",
             3,
             ["key: /abc/def/ghi/klmn/opq"],
         ),
         (
-            DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
+            SpecPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
             "key",
             9,
             ["key      : abc ← /abc/def/ghi/klmn/opq"],
         ),
         (
-            [DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted, 1],
+            [SpecPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted, 1],
             "key",
             9,
             ["key      : \\['abc ← /abc/def/ghi/klmn/opq', 1]"],
         ),
         (
             {
-                "a": DualPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
+                "a": SpecPath("/abc/def/ghi/klmn/opq", mounted="abc").mounted,
                 "b": 1,
-                "c": DualPath("/abc/def/ghi/klmn/opq").mounted,
+                "c": SpecPath("/abc/def/ghi/klmn/opq").mounted,
                 "def": Path("/rst/uvw/xyz"),
             },
             "key",
@@ -167,7 +167,7 @@ def test_log_values(capsys):
     values = {
         "a": "abc",
         "b": "def",
-        "c": DualPath("/abc/def", mounted="/ghi/jkl").mounted,
+        "c": SpecPath("/abc/def", mounted="/ghi/jkl").mounted,
     }
     _log_values(values, log_fn, 0, prefix="x.")
     captured = capsys.readouterr().out

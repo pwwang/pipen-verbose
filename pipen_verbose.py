@@ -7,9 +7,10 @@ from pprint import pformat
 from pathlib import Path
 from functools import singledispatch
 from time import time
+
 from yunpath import CloudPath
 from xqute import JobStatus
-
+from xqute.path import MountedPath
 from pipen import plugin
 from pipen.utils import get_logger, brief_list, logger_console
 
@@ -105,9 +106,8 @@ def _(value: Path | CloudPath, len_cutoff: int = 20) -> str:
 def _is_mounted_path(path: Any) -> bool:
     """Check if the path is a mounted path"""
     return (
-        isinstance(path, (Path, CloudPath))
-        and hasattr(path, "spec")
-        and path.spec != path
+        isinstance(path, MountedPath)
+        and path.is_mounted()
     )
 
 
@@ -293,8 +293,8 @@ class PipenVerbose:
             job.log("error", "stderr: %s", job.stderr_file, **kwargs)
         else:  # pragma: no cover
             job.log("error", "script: %s", job.script_file.mounted, **kwargs)
-            job.log("error", "script (spec): %s", job.script_file, **kwargs)
+            job.log("error", "      \u2190 %s", job.script_file, **kwargs)
             job.log("error", "stdout: %s", job.stdout_file.mounted, **kwargs)
-            job.log("error", "stdout (spec): %s", job.stdout_file, **kwargs)
+            job.log("error", "      \u2190 %s", job.stdout_file, **kwargs)
             job.log("error", "stderr: %s", job.stderr_file.mounted, **kwargs)
-            job.log("error", "stderr (spec): %s", job.stderr_file, **kwargs)
+            job.log("error", "      \u2190 %s", job.stderr_file, **kwargs)
