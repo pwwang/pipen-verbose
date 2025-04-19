@@ -231,6 +231,9 @@ class PipenVerbose:
             if value is not None and value != proc.pipeline.config.get(prop, None):
                 props[prop] = value
 
+        if 'size' in props and props['size'] == 1:
+            del props['size']
+
         _log_values(props, proc.log, len(proc.name), prefix="")
 
         # printing the process envs
@@ -240,7 +243,11 @@ class PipenVerbose:
         job = proc.jobs[0]
         # [01/10] in.infile
         # ^^^^^^^^
-        jobindex_len = len(str(len(proc.jobs) - 1)) * 2 + 4
+        if proc.size > 1:
+            jobindex_len = len(str(proc.size - 1)) * 2 + 4
+        else:
+            jobindex_len = 0
+
         # printing the process input
         # ---------------------------------
         _log_values(job.input, job.log, len(proc.name) + jobindex_len, prefix="in.")
