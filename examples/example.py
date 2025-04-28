@@ -7,6 +7,24 @@ class AProc(Proc):
     envs = {
         "x": "[a]\nb=1\n",
         "xyz": "[a]\nb=1\n",
+        "cases": {
+            "some_key": "some_value",
+            "another_key": {
+                "nested_key": "nested_value",
+                "list_key": [1, 2, 3],
+                "nested_list_key": [
+                    {"key1": "value1", "key2": "value2"},
+                    {"key3": "value3", "key4": "value4", "key5": "value5"},
+                ],
+                "nested_dict_key": {
+                    "sub_key1": "sub_value1",
+                    "sub_key2": {
+                        "sub_sub_key1": "sub_sub_value1",
+                        "sub_sub_key2": [4, 5, 6],
+                    },
+                },
+            }
+        }
     }
     script = "echo 123 > {{out.b}}"
 
