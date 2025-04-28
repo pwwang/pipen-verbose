@@ -9,6 +9,7 @@ from pipen_verbose import (
     _is_mounted_path,
     _format_value,
     _log_values,
+    _pretty,
 )
 
 
@@ -150,8 +151,8 @@ def test_format_atomic_value(value, expected):
             "key",
             9,
             [
-                "key      : {'a': 'abc ← /abc/def/ghi/klmn/opq', 'b': 1, "
-                "'c': '/abc/def/ghi/klmn/opq', 'def': '/rst/uvw/xyz'}"
+                "key      : { 'a': 'abc ← /abc/def/ghi/klmn/opq', 'b': 1, "
+                "'c': '/abc/def/ghi/klmn/opq', 'def': '/rst/uvw/xyz' }"
             ],
         ),
     ],
@@ -174,3 +175,84 @@ def test_log_values(capsys):
     assert "info: x.a: abc" in captured
     assert "info: x.b: def" in captured
     assert "info: x.c: /ghi/jkl ← /abc/def" in captured
+
+
+def test_pretty_default():
+    class ArbitraryObject:
+        def __repr__(self):
+            return "ArbitraryObject()"
+
+    assert _pretty(ArbitraryObject(), 0, {}) == "ArbitraryObject()"
+
+
+def test_pretty_dict_depth():
+    test_dict = {
+        "b": {
+            "c": 2,
+            "d": {
+                "e": 3,
+                "f": [4, 5, 6],
+            },
+        },
+        "g": [7, 8, {"h": 9}],
+        "a": 1,
+    }
+    result = _pretty(
+        test_dict,
+        0,
+        {
+            "depth": 1,
+            "indent": 2,
+            "width": 40,
+            "compact": False,
+            "sort_dicts": False,
+            "underscore_numbers": False,
+        },
+    )
+    expected = (
+        "{\n"
+        "  'b': {...},\n"
+        "  'g': [...],\n"
+        "  'a': 1,\n"
+        "}"
+    )
+    assert result == expected
+
+    result = _pretty(
+        test_dict,
+        0,
+        {
+            "depth": 1,
+            "indent": 2,
+            "width": 40,
+            "compact": False,
+            "sort_dicts": True,
+            "underscore_numbers": False,
+        },
+    )
+    expected = (
+        "{\n"
+        "  'a': 1,\n"
+        "  'b': {...},\n"
+        "  'g': [...],\n"
+        "}"
+    )
+    assert result == expected
+
+
+def test_pretty_list_non_compact():
+    test_list = [1, 2, 3000]
+    result = _pretty(
+        test_list,
+        0,
+        {
+            "depth": 1,
+            "indent": 2,
+            "width": 40,
+            "compact": False,
+            "sort_dicts": False,
+            "underscore_numbers": True,
+        },
+    )
+    expected = "[\n  1,\n  2,\n  3_000,\n]"
+    assert result == expected
