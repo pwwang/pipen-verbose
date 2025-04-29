@@ -9,7 +9,7 @@ from pipen_verbose import (
     _is_mounted_path,
     _format_value,
     _log_values,
-    _pretty,
+    _pretty_format,
 )
 
 
@@ -151,8 +151,8 @@ def test_format_atomic_value(value, expected):
             "key",
             9,
             [
-                "key      : { 'a': 'abc ← /abc/def/ghi/klmn/opq', 'b': 1, "
-                "'c': '/abc/def/ghi/klmn/opq', 'def': '/rst/uvw/xyz' }"
+                "key      : {'a': 'abc ← /abc/def/ghi/klmn/opq', 'b': 1, "
+                "'c': '/abc/def/ghi/klmn/opq', 'def': '/rst/uvw/xyz'}"
             ],
         ),
     ],
@@ -182,7 +182,7 @@ def test_pretty_default():
         def __repr__(self):
             return "ArbitraryObject()"
 
-    assert _pretty(ArbitraryObject(), 0, {}) == "ArbitraryObject()"
+    assert _pretty_format(ArbitraryObject()) == "ArbitraryObject()"
 
 
 def test_pretty_dict_depth():
@@ -197,10 +197,10 @@ def test_pretty_dict_depth():
         "g": [7, 8, {"h": 9}],
         "a": 1,
     }
-    result = _pretty(
+    result = _pretty_format(
         test_dict,
-        0,
-        {
+        _level=0,
+        **{
             "depth": 1,
             "indent": 2,
             "width": 40,
@@ -209,19 +209,13 @@ def test_pretty_dict_depth():
             "underscore_numbers": False,
         },
     )
-    expected = (
-        "{\n"
-        "  'b': {...},\n"
-        "  'g': [...],\n"
-        "  'a': 1,\n"
-        "}"
-    )
+    expected = "{\n" "  'b': {...},\n" "  'g': [...],\n" "  'a': 1,\n" "}"
     assert result == expected
 
-    result = _pretty(
+    result = _pretty_format(
         test_dict,
-        0,
-        {
+        _level=0,
+        **{
             "depth": 1,
             "indent": 2,
             "width": 40,
@@ -230,22 +224,158 @@ def test_pretty_dict_depth():
             "underscore_numbers": False,
         },
     )
+    expected = "{\n" "  'a': 1,\n" "  'b': {...},\n" "  'g': [...],\n" "}"
+    assert result == expected
+
+
+def test_pretty_nested_dict():
+    test_dict = {
+        "venn": {
+            "enabled": "auto",
+            "more_formats": [],
+            "save_code": False,
+            "devpars": {"res": 100},
+        },
+    }
+    result = _pretty_format(
+        test_dict,
+        _level=0,
+        **{
+            "depth": None,
+            "indent": 2,
+            "width": 90,
+            "compact": False,
+            "sort_dicts": False,
+            "underscore_numbers": False,
+        },
+    )
     expected = (
         "{\n"
-        "  'a': 1,\n"
-        "  'b': {...},\n"
-        "  'g': [...],\n"
+        "  'venn': {\n"
+        "    'enabled': 'auto',\n"
+        "    'more_formats': [],\n"
+        "    'save_code': False,\n"
+        "    'devpars': {\n"
+        "      'res': 100,\n"
+        "    },\n"
+        "  },\n"
         "}"
     )
     assert result == expected
 
 
+def test_pretty_dict_compact():
+    test_dict = {"x": {"a": 1, "b": 2, "c": 3}}
+    result = _pretty_format(
+        test_dict,
+        indent=2,
+        width=40,
+        compact=True,
+    )
+    expected = "{'x': {'a': 1, 'b': 2, 'c': 3}}"
+    assert result == expected
+
+    result = _pretty_format(
+        test_dict,
+        indent=2,
+        width=26,
+        compact=True,
+    )
+    expected = "{\n" "  'x': {\n" "    'a': 1, 'b': 2, 'c': 3\n" "  },\n" "}"
+    assert result == expected
+
+
+def test_pretty_dict_wraps_even_compact():
+    test_dict = {"x": {"a": 1, "b": 2, "c": 3}}
+    result = _pretty_format(
+        test_dict,
+        indent=2,
+        width=25,
+        compact=True,
+    )
+    expected = (
+        "{\n" "  'x': {\n" "    'a': 1,\n" "    'b': 2,\n" "    'c': 3,\n" "  },\n" "}"
+    )
+    assert result == expected
+
+
+def test_pretty_list_compact():
+    test_list = [1, 2, 3000]
+    result = _pretty_format(
+        test_list,
+        _level=0,
+        **{
+            "depth": 1,
+            "indent": 2,
+            "width": 20,
+            "compact": True,
+            "sort_dicts": False,
+            "underscore_numbers": True,
+        },
+    )
+    expected = "[1, 2, 3_000]"
+    assert result == expected
+
+
+def test_pretty_list_wraps_even_compact():
+    test_list = [1, 2, 3000]
+    result = _pretty_format(
+        test_list,
+        _level=0,
+        **{
+            "depth": 1,
+            "indent": 2,
+            "width": 12,
+            "compact": True,
+            "sort_dicts": False,
+            "underscore_numbers": True,
+        },
+    )
+    expected = "[\n" "  1,\n" "  2,\n" "  3_000,\n" "]"
+    assert result == expected
+
+
+def test_pretty_list_compact_with_enough_width():
+    test_list = [1, 2, 3000]
+    result = _pretty_format(
+        test_list,
+        _level=0,
+        **{
+            "depth": 1,
+            "indent": 2,
+            "width": 13,
+            "compact": True,
+            "sort_dicts": False,
+            "underscore_numbers": True,
+        },
+    )
+    expected = "[1, 2, 3_000]"
+    assert result == expected
+
+
+def test_pretty_list_compact_but_wraps_as_one_line():
+    test_list = {"x": [1, 2, 3000]}
+    result = _pretty_format(
+        test_list,
+        _level=0,
+        **{
+            "indent": 2,
+            "width": 15,
+            "compact": True,
+            "sort_dicts": False,
+            "underscore_numbers": True,
+        },
+    )
+    expected = "{\n" "  'x': [\n" "    1, 2, 3_000\n" "  ],\n" "}"
+    assert result == expected
+
+
 def test_pretty_list_non_compact():
     test_list = [1, 2, 3000]
-    result = _pretty(
+    result = _pretty_format(
         test_list,
-        0,
-        {
+        _level=0,
+        **{
             "depth": 1,
             "indent": 2,
             "width": 40,
@@ -255,4 +385,79 @@ def test_pretty_list_non_compact():
         },
     )
     expected = "[\n  1,\n  2,\n  3_000,\n]"
+    assert result == expected
+
+
+def test_pretty_empty_dict():
+    test_dict = {}
+    result = _pretty_format(
+        test_dict,
+        _level=0,
+        **{
+            "depth": 1,
+            "indent": 2,
+            "width": 40,
+            "compact": False,
+            "sort_dicts": False,
+            "underscore_numbers": False,
+        },
+    )
+    expected = "{}"
+    assert result == expected
+
+
+def test_pretty_empty_list():
+
+    test_list = []
+    result = _pretty_format(
+        test_list,
+        _level=0,
+        **{
+            "depth": 1,
+            "indent": 2,
+            "width": 40,
+            "compact": False,
+            "sort_dicts": False,
+            "underscore_numbers": False,
+        },
+    )
+    expected = "[]"
+    assert result == expected
+
+
+def test_pretty_real_case():
+    test_dict = {
+        "another_key": {
+            "nested_list_key": [
+                {"key1": "value1", "key2": "value2"},
+                {
+                    "key3": "value3",
+                    "key4": "value4",
+                    "key5": "value5",
+                },
+            ],
+        },
+    }
+    result = _pretty_format(
+        test_dict,
+        _level=0,
+        **{
+            "depth": None,
+            "indent": 2,
+            "width": 79,
+            "compact": True,
+            "sort_dicts": False,
+            "underscore_numbers": False,
+        },
+    )
+    expected = (
+        "{\n"
+        "  'another_key': {\n"
+        "    'nested_list_key': [\n"
+        "      {'key1': 'value1', 'key2': 'value2'},\n"
+        "      {'key3': 'value3', 'key4': 'value4', 'key5': 'value5'},\n"
+        "    ],\n"
+        "  },\n"
+        "}"
+    )
     assert result == expected

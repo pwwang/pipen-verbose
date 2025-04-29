@@ -5,7 +5,7 @@ from __future__ import annotations
 import numbers
 from typing import TYPE_CHECKING, Any, Callable, List, Mapping, TypeVar
 from pathlib import Path
-from functools import singledispatch
+from functools import singledispatch, partial
 from time import time
 
 from yunpath import CloudPath
@@ -108,189 +108,203 @@ def _is_mounted_path(path: Any) -> bool:
     return isinstance(path, MountedPath) and path.is_mounted()
 
 
-def pretty_block_format(
-    obj,
-    indent=4,
-    width=80,
-    depth=None,
-    compact=False,
-    sort_dicts=False,
-    underscore_numbers=False,
-):
-    """
-    Format a Python object into a pretty-printed string with block style and optional
-    compacting.
-
-    Args:
-        obj (any): The object to be formatted
-            (dict, list, tuple, set, numbers, etc.).
-        indent (int, optional): Number of spaces to use for indentation (default is 4).
-        width (int, optional): Maximum line width. If exceeded, formatting will
-            continue on the next line (default is 80).
-        depth (int, optional): Maximum depth to display nested objects. If exceeded,
-            '...' is shown (default is None, no depth limit).
-        compact (bool, optional): If True, small objects (dicts, lists) will be printed
-            on a single line if they fit within the width (default is False).
-        sort_dicts (bool, optional): If True, dictionaries will be sorted by their keys
-            (default is False).
-        underscore_numbers (bool, optional): If True, integers will be formatted with
-            underscores as thousand separators (default is False).
-
-    Returns:
-        str: A formatted string representation of the input object.
-    """
-    context = {
-        "indent": indent,
-        "width": width,
-        "depth": depth,
-        "compact": compact,
-        "sort_dicts": sort_dicts,
-        "underscore_numbers": underscore_numbers,
-    }
-    return _pretty(obj, 0, context)
-
-
 @singledispatch
-def _pretty(obj, level, context):
+def _pretty_format(
+    obj,
+    indent: int = 4,
+    width: int = 80,
+    depth: int | None = None,
+    compact: bool = False,
+    sort_dicts: bool = False,
+    underscore_numbers: bool = False,
+    _level: int = 0,
+    _force_uncompact: bool = False,
+    _prevkey_len: int = 0,
+) -> str:
     """
-    Default handler for formatting objects that do not fall into a special category.
-    Simply returns the repr of the object.
+    Format a Python object into a pretty-printed string with block style and
+    optional compacting.
 
     Args:
-        obj (any): The object to be formatted.
-        level (int): Current level of nesting.
-        context (dict): Formatting context with options like indent, width, etc.
+        obj (any): The object to be formatted (dict, list, tuple, set, numbers, etc.).
+        indent (int, optional): Number of spaces to use for indentation (default is 4).
+        width (int, optional): Maximum line width (default is 80).
+        depth (int, optional): Maximum nesting depth (None means no limit).
+        compact (bool, optional): Compact small structures into a single line if
+            possible.
+        sort_dicts (bool, optional): Sort dictionaries by their keys.
+        underscore_numbers (bool, optional): Use underscores for large integers.
+        _level (int, optional): Current nesting level (used internally).
+        _force_uncompact (bool, optional): Force uncompact formatting (used internally).
+        _prevkey_len (int, optional): Length of the previous (up-level) key
+            (used internally).
 
     Returns:
-        str: The string representation of the object.
+        str: A formatted string representation of the object.
     """
     return repr(obj)
 
 
-@_pretty.register(dict)
-def _pretty_dict(obj, level, context):
-    """
-    Format a dictionary into a pretty-printed block-style string.
+@_pretty_format.register(dict)
+def _pretty_format_dict(
+    obj,
+    indent: int = 4,
+    width: int = 80,
+    depth: int | None = None,
+    compact: bool = False,
+    sort_dicts: bool = False,
+    underscore_numbers: bool = False,
+    _level: int = 0,
+    _force_uncompact: bool = False,
+    _prevkey_len: int = 0,
+) -> str:
+    if not obj:
+        return "{}"
 
-    Args:
-        obj (dict): The dictionary to be formatted.
-        level (int): Current level of nesting.
-        context (dict): Formatting context with options like indent, width, etc.
-
-    Returns:
-        str: The formatted string representation of the dictionary.
-    """
-    indent = context["indent"]
-    width = context["width"]
-    depth = context["depth"]
-    compact = context["compact"]
-    sort_dicts = context["sort_dicts"]
-
-    if depth is not None and level >= depth:
+    if depth is not None and _level >= depth:
         return "{...}"
 
-    items = obj.items()
-    if sort_dicts:
-        items = sorted(items)
+    items = sorted(obj.items()) if sort_dicts else obj.items()
+
+    _pf = partial(
+        _pretty_format,
+        indent=indent,
+        # width=width,
+        depth=depth,
+        # compact=compact,
+        sort_dicts=sort_dicts,
+        underscore_numbers=underscore_numbers,
+        _level=_level + 1,
+        # _force_uncompact=_force_uncompact,
+    )
 
     if compact:
-        inner = ", ".join(
-            f"{repr(k)}: {_pretty(v, level+1, context)}" for k, v in items
+        # do not set the width so inner is also compacted
+        compacted = ", ".join(
+            repr(k)
+            + ": "
+            + _pf(v, compact=True, _force_uncompact=True, _prevkey_len=len(repr(k)) + 2)
+            for k, v in items
         )
-        if len(inner) + indent * level + 2 <= width:
-            return "{ " + inner + " }"
+        if _force_uncompact or len(compacted) + 2 <= width:
+            # see if we can do {"a": 1, "b": 2, ...}
+            return f"{{{compacted}}}"
 
+        # check if we can do
+        # |- prevkeylen -||---- width ----|
+        # "previous_key": {
+        #   "a": 1, "b": 2, ...
+        # }
+        if len(compacted) <= width + _prevkey_len - indent:
+            return (
+                "{\n"
+                f"{' ' * indent * (_level + 1)}{compacted}\n"
+                f"{' ' * indent * _level}}}"
+            )
+
+    # otherwise, we need to expand the dict
     parts = []
     parts.append("{\n")
     for k, v in items:
-        parts.append(" " * indent * (level + 1))
-        parts.append(f"{repr(k)}: {_pretty(v, level+1, context)},\n")
-    parts.append(" " * indent * level + "}")
+        new_width = width + _prevkey_len - indent - len(repr(k)) - 2
+        parts.append(
+            ' ' * (indent * (_level + 1))
+            + repr(k)
+            + ": "
+            + _pf(v, compact=compact, width=new_width, _prevkey_len=len(repr(k)) + 2)
+            + ",\n"
+        )
+    parts.append(" " * (indent * _level) + "}")
     return "".join(parts)
 
 
-@_pretty.register(list)
-@_pretty.register(tuple)
-@_pretty.register(set)
-def _pretty_sequence(obj, level, context):
-    """
-    Format a list, tuple, or set into a pretty-printed block-style string.
-
-    Args:
-        obj (list | tuple | set): The sequence to be formatted.
-        level (int): Current level of nesting.
-        context (dict): Formatting context with options like indent, width, etc.
-
-    Returns:
-        str: The formatted string representation of the sequence.
-    """
-    indent = context["indent"]
-    width = context["width"]
-    depth = context["depth"]
-    compact = context["compact"]
-
-    if depth is not None and level >= depth:
-        return (
-            "[...]"
-            if isinstance(obj, list)
-            else "(...)" if isinstance(obj, tuple) else "{...}"
-        )
-
+@_pretty_format.register(list)
+@_pretty_format.register(tuple)
+@_pretty_format.register(set)
+def _pretty_format_sequence(
+    obj,
+    indent: int = 4,
+    width: int = 80,
+    depth: int | None = None,
+    compact: bool = False,
+    sort_dicts: bool = False,
+    underscore_numbers: bool = False,
+    _level: int = 0,
+    _force_uncompact: bool = False,
+    _prevkey_len: int = 0,
+) -> str:
     open_bracket, close_bracket = (
         ("[", "]")
         if isinstance(obj, list)
         else ("(", ")") if isinstance(obj, tuple) else ("{", "}")
     )
 
-    elements = [_pretty(item, level + 1, context) for item in obj]
+    if not obj:
+        return f"{open_bracket}{close_bracket}"
+
+    if depth is not None and _level >= depth:
+        return f"{open_bracket}...{close_bracket}"
+
+    _pf = partial(
+        _pretty_format,
+        indent=indent,
+        # width=width,
+        depth=depth,
+        # compact=compact,
+        sort_dicts=sort_dicts,
+        underscore_numbers=underscore_numbers,
+        _level=_level + 1,
+    )
 
     if compact:
-        inner = ", ".join(elements)
-        if len(inner) + indent * level + 2 <= width:
+        # do not set the width so inner is also compacted
+        inner = ", ".join(
+            _pf(elem, compact=True, _force_uncompact=True)
+            for elem in obj
+        )
+        # Let's see if we can do [1, 2, ...]
+        if _force_uncompact or len(inner) + 2 <= width:
             return open_bracket + inner + close_bracket
+
+        # check if we can do
+        # |- prevkeylen -||---- width ----|
+        # "previous_key": [
+        #   1, 2, ...
+        # ]
+        if len(inner) <= width + _prevkey_len - indent:
+            return (
+                open_bracket + "\n"
+                + ' ' * (indent * (_level + 1)) + inner + "\n"
+                + ' ' * (indent * _level) + close_bracket
+            )
 
     parts = []
     parts.append(open_bracket + "\n")
-    for elem in elements:
-        parts.append(" " * indent * (level + 1))
-        parts.append(f"{elem},\n")
-    parts.append(" " * indent * level + close_bracket)
+    for elem in obj:
+        new_width = width + _prevkey_len - indent
+        parts.append(
+            f"{' ' * (indent * (_level + 1))}"
+            f"{_pf(elem, compact=compact, width=new_width)},\n"
+        )
+    parts.append(" " * indent * _level + close_bracket)
     return "".join(parts)
 
 
-@_pretty.register(numbers.Number)
-def _pretty_number(obj, level, context):
-    """
-    Format a number (integer or float) into a string representation,
-    with optional underscore formatting for thousands.
-
-    Args:
-        obj (int | float): The number to be formatted.
-        level (int): Current level of nesting.
-        context (dict): Formatting context with options like indent, width, etc.
-
-    Returns:
-        str: The formatted string representation of the number.
-    """
-    underscore_numbers = context["underscore_numbers"]
+@_pretty_format.register(numbers.Number)
+def _pretty_number(
+    obj,
+    indent: int = 4,
+    width: int = 80,
+    depth: int | None = None,
+    compact: bool = False,
+    sort_dicts: bool = False,
+    underscore_numbers: bool = False,
+    _level: int = 0,
+    _force_uncompact: bool = False,
+    _prevkey_len: int = 0,
+) -> str:
     if isinstance(obj, int) and underscore_numbers:
         return f"{obj:_}"
-    return repr(obj)
-
-
-@_pretty.register(str)
-def _pretty_string(obj, level, context):
-    """
-    Return the string representation of a string object.
-
-    Args:
-        obj (str): The string to be formatted.
-        level (int): Current level of nesting.
-        context (dict): Formatting context with options like indent, width, etc.
-
-    Returns:
-        str: The string representation of the string.
-    """
     return repr(obj)
 
 
@@ -338,10 +352,10 @@ def _format_value(value, key: str, key_len: int, procname_len: int) -> List[str]
     value = _format_atomic_value(value)
     out = []
     if not isinstance(value, str):
-        value = pretty_block_format(
+        value = _pretty_format(
             value,
             compact=True,
-            indent=2,
+            indent=4,
             # time, level, logger_name, procname,     ': ', key,      ': '
             # 15  + 2    + 8         + procname_len + 2   + key_len + 2
             width=logger_console._width - procname_len - key_len - 29,

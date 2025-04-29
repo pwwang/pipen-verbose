@@ -1,5 +1,6 @@
 from pipen import Pipen, Proc
 
+
 class AProc(Proc):
     input = "a,b:file"
     output = "b:file:{{in.a}}.txt"
@@ -23,10 +24,17 @@ class AProc(Proc):
                         "sub_sub_key2": [4, 5, 6],
                     },
                 },
-            }
-        }
+            },
+            "venn": {
+                "enabled": "auto",
+                "more_formats": [],
+                "save_code": False,
+                "devpars": {"res": 100},
+            },
+        },
     }
     script = "echo 123 > {{out.b}}"
+
 
 pipen = Pipen(loglevel="debug").set_start(AProc)
 
