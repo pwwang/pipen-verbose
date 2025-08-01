@@ -438,7 +438,6 @@ class PipenVerbose:
         # ---------------------------------
         _log_values(proc.envs, proc.log, len(proc.name), prefix="envs.")
 
-        job = proc.jobs[0]
         # [01/10] in.infile
         # ^^^^^^^^
         if proc.size > 1:
@@ -446,14 +445,16 @@ class PipenVerbose:
         else:
             jobindex_len = 0
 
-        # printing the process input
-        # ---------------------------------
-        _log_values(job.input, job.log, len(proc.name) + jobindex_len, prefix="in.")
+        if proc.size > 1:
+            job = proc.jobs[0]
+            # printing the process input
+            # ---------------------------------
+            _log_values(job.input, job.log, len(proc.name) + jobindex_len, prefix="in.")
 
-        # printing the process output
-        # ---------------------------------
-        output = job.output
-        _log_values(output, job.log, len(proc.name) + jobindex_len, prefix="out.")
+            # printing the process output
+            # ---------------------------------
+            output = job.output
+            _log_values(output, job.log, len(proc.name) + jobindex_len, prefix="out.")
 
         self.tic = time()
 
