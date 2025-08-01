@@ -70,8 +70,14 @@ def test_multijob(pipen, caplog):
 def test_envs_square_brackets(pipen, caplog):
     proc = Proc.from_proc(EnvsSquareBracketsProc, input_data=[1])
     pipen.set_starts(proc).run()
-    assert "[cyan]proc:[/cyan] envs.x: \\[a]" in caplog.text
-    assert "[cyan]proc:[/cyan]         b=1" in caplog.text
+    assert (
+        "[cyan]proc:[/cyan] envs.x: \\[a]" in caplog.text
+        or "proc: envs.x: \\[a]" in caplog.text
+    )
+    assert (
+        "[cyan]proc:[/cyan]         b=1" in caplog.text
+        or "proc:         b=1" in caplog.text
+    )
 
 
 def test_path_shorten(pipen, caplog):

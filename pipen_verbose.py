@@ -445,7 +445,7 @@ class PipenVerbose:
         else:
             jobindex_len = 0
 
-        if proc.size > 1:
+        if proc.jobs:
             job = proc.jobs[0]
             # printing the process input
             # ---------------------------------
