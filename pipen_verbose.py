@@ -397,6 +397,7 @@ class PipenVerbose:
 
     __version__: str = __version__
     __slots__ = ("tic",)
+    instantiate = True  # this plugin should be instantiated once
 
     def __init__(self) -> None:
         """Constructor"""
