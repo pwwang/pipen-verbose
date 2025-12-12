@@ -8,6 +8,7 @@ from pathlib import Path
 from functools import singledispatch, partial
 from time import time
 
+from rich.markup import escape
 from yunpath import CloudPath
 from xqute import JobStatus
 from xqute.path import MountedPath
@@ -491,7 +492,7 @@ class PipenVerbose:
         stderr = job.stderr_file.read_text() if job.stderr_file.is_file() else ""
         kwargs = {"limit": job.index + 1, "logger": logger}
         for line in stderr.splitlines():
-            job.log("error", "[red]%s[/red]", line, **kwargs)
+            job.log("error", "[red]%s[/red]", escape(line), **kwargs)
 
         job.log("error", "[red]-----------------------------------[/red]", **kwargs)
         if not _is_mounted_path(job.script_file.mounted):
