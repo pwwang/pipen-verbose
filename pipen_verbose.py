@@ -18,7 +18,7 @@ from pipen.utils import get_logger, brief_list, logger_console
 if TYPE_CHECKING:  # pragma: no cover
     from pipen import Proc
 
-__version__ = "0.14.5"
+__version__ = "0.14.6"
 
 logger = get_logger("verbose", "info")
 T = TypeVar("T", list, tuple, set)
