@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pipen-verbose"
-version = "0.14.6"
+version = "1.0.0"
 description = "Add verbosal information in logs for pipen."
 authors = ["pwwang <pwwang@pwwang.com>"]
 license = "MIT"
