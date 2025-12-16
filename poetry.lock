@@ -903,14 +903,14 @@ executing = ">=2.0,<3.0"
 
 [[package]]
 name = "pipen"
-version = "1.0.1"
+version = "1.0.2"
 description = "A pipeline framework for python"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "pipen-1.0.1-py3-none-any.whl", hash = "sha256:be0f8ebeeabed150536b5d13aa6e802435169e2bfc93f8e6fa04d54289d79d0d"},
-    {file = "pipen-1.0.1.tar.gz", hash = "sha256:1b5fdf11ed077b2526473cdfcd5834ba67bb7208c79fdab340bd2e452e718926"},
+    {file = "pipen-1.0.2-py3-none-any.whl", hash = "sha256:7386ec8b081c7214acb542ff22007b59fad738d37617f52bc15551ef0985b8db"},
+    {file = "pipen-1.0.2.tar.gz", hash = "sha256:1b61c4c5be9ea1f69e3257609d8b92585c6de975edd94eeb51ca77d4f196f3fc"},
 ]
 
 [package.dependencies]
@@ -1398,4 +1398,4 @@ cloudpathlib = ">=0.23,<0.24"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "cfa74c5941fa0f9a9add729fce5b88100813133b81c7238487b6444f144d9b65"
+content-hash = "085efec29bd5d568855093744f3cce51da854c20dbbb328014c88abd0df01e07"
