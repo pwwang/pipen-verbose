@@ -16,7 +16,7 @@ from pipen import plugin
 from pipen.utils import get_logger, brief_list, logger_console
 
 if TYPE_CHECKING:  # pragma: no cover
-    from pipen import Proc
+    from pipen import Proc, Job
 
 __version__ = "0.14.6"
 
@@ -440,23 +440,23 @@ class PipenVerbose:
         # ---------------------------------
         _log_values(proc.envs, proc.log, len(proc.name), prefix="envs.")
 
+    @plugin.impl
+    async def on_job_init(self, job: Job):
+        if job.index != 0:
+            return
+
         # [01/10] in.infile
         # ^^^^^^^^
-        if proc.size > 1:
-            jobindex_len = len(str(proc.size - 1)) * 2 + 4
-        else:
-            jobindex_len = 0
+        jobindex_len = len(str(job.proc.size - 1)) * 2 + 4
 
-        if proc.jobs:
-            job = proc.jobs[0]
-            # printing the process input
-            # ---------------------------------
-            _log_values(job.input, job.log, len(proc.name) + jobindex_len, prefix="in.")
+        # printing the process input
+        # ---------------------------------
+        _log_values(job.input, job.log, len(job.proc.name) + jobindex_len, prefix="in.")
 
-            # printing the process output
-            # ---------------------------------
-            output = job.output
-            _log_values(output, job.log, len(proc.name) + jobindex_len, prefix="out.")
+        # printing the process output
+        # ---------------------------------
+        output = job.output
+        _log_values(output, job.log, len(job.proc.name) + jobindex_len, prefix="out.")
 
         self.tic = time()
 

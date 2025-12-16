@@ -36,7 +36,9 @@ class AProc(Proc):
     script = "echo 123 > {{out.b}}"
 
 
-pipen = Pipen(loglevel="debug").set_start(AProc)
+pipen = Pipen(loglevel="debug", plugin_opts={"verbose_loglevel": "debug"}).set_start(
+    AProc
+)
 
 if __name__ == "__main__":
     pipen.run()
