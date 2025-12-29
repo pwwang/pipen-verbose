@@ -1399,4 +1399,4 @@ gs = ["gcloud-aio-storage (>=8.0.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "3da24bbd3b7037abcf38828dea3b77235109af5bd1d0594b24d16d903c0c5f3a"
+content-hash = "494c72ea341e34a03eb40762993e3196bb1de27e9eff92333e6a5239712eedbd"

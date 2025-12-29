@@ -10,7 +10,7 @@ repository = "https://github.com/pwwang/pipen-verbose"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pipen = {version = "^1.0", allow-prereleases = true}
+pipen = {version = "1.1.*", allow-prereleases = true}
 
 [tool.poetry.build]
 generate-setup-file = true
