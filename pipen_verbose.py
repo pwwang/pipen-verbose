@@ -9,7 +9,6 @@ from functools import singledispatch, partial
 from time import time
 
 from rich.markup import escape
-from yunpath import CloudPath
 from xqute import JobStatus
 from xqute.path import MountedPath
 from pipen import plugin
@@ -91,8 +90,7 @@ def _(value: str, len_cutoff: int = 20) -> str:
 
 
 @_shorten_value.register(Path)
-@_shorten_value.register(CloudPath)
-def _(value: Path | CloudPath, len_cutoff: int = 20) -> str:
+def _(value: Path, len_cutoff: int = 20) -> str:
     """Format the value of Path or CloudPath"""
     fmtfn = _shorten_value.dispatch(str)
 
@@ -209,7 +207,7 @@ def _pretty_format_dict(
     for k, v in items:
         new_width = width + _prevkey_len - indent - len(repr(k)) - 2
         parts.append(
-            ' ' * (indent * (_level + 1))
+            " " * (indent * (_level + 1))
             + repr(k)
             + ": "
             + _pf(v, compact=compact, width=new_width, _prevkey_len=len(repr(k)) + 2)
@@ -260,8 +258,7 @@ def _pretty_format_sequence(
     if compact:
         # do not set the width so inner is also compacted
         inner = ", ".join(
-            _pf(elem, compact=True, _force_uncompact=True)
-            for elem in obj
+            _pf(elem, compact=True, _force_uncompact=True) for elem in obj
         )
         # Let's see if we can do [1, 2, ...]
         if _force_uncompact or len(inner) + 2 <= width:
@@ -274,9 +271,13 @@ def _pretty_format_sequence(
         # ]
         if len(inner) <= width + _prevkey_len - indent:
             return (
-                open_bracket + "\n"
-                + ' ' * (indent * (_level + 1)) + inner + "\n"
-                + ' ' * (indent * _level) + close_bracket
+                open_bracket
+                + "\n"
+                + " " * (indent * (_level + 1))
+                + inner
+                + "\n"
+                + " " * (indent * _level)
+                + close_bracket
             )
 
     parts = []
@@ -316,8 +317,7 @@ def _format_atomic_value(value: Any) -> str:
 
 
 @_format_atomic_value.register(Path)
-@_format_atomic_value.register(CloudPath)
-def _(value: Path | CloudPath) -> str:
+def _(value: Path) -> str:
     """Format the value of MountedPath"""
     if _is_mounted_path(value):
         return f"{value} \u2190 {value.spec}"
@@ -476,7 +476,9 @@ class PipenVerbose:
             return
 
         # print error info if any job failed
-        failed_jobs = [job.index for job in proc.jobs if job.status == JobStatus.FAILED]
+        failed_jobs = [
+            job.index for job in proc.jobs if job._status == JobStatus.FAILED
+        ]
         if not failed_jobs:  # pragma: no cover
             # could be triggered by Ctrl+C and all jobs are running
             return
@@ -489,7 +491,11 @@ class PipenVerbose:
         )
 
         job = proc.jobs[failed_jobs[0]]
-        stderr = job.stderr_file.read_text() if job.stderr_file.is_file() else ""
+        stderr = (
+            await job.stderr_file.a_read_text()
+            if await job.stderr_file.a_is_file()
+            else ""
+        )
         kwargs = {"limit": job.index + 1, "logger": logger}
         for line in stderr.splitlines():
             job.log("error", "[red]%s[/red]", escape(line), **kwargs)
