@@ -20,8 +20,8 @@ pytest = "^8"
 pytest-cov = "^6"
 
 [build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.plugins.pipen]
 verbose = "pipen_verbose:PipenVerbose"
