@@ -405,7 +405,7 @@ class PipenVerbose:
         self.tic: float = 0.0  # pragma: no cover
 
     @plugin.impl
-    def on_proc_input_computed(self, proc: Proc):
+    async def on_proc_input_computed(self, proc: Proc):
         """Print input data on debug"""
         if hasattr(proc.input.data, "map"):  # pragma: no cover
             # pandas 2.1
