@@ -21,6 +21,7 @@ __version__ = "1.1.1"
 
 logger = get_logger("verbose", "info")
 T = TypeVar("T", list, tuple, set)
+
 VERBOSAL_CONFIGS = {
     # name: getter
     "scheduler": lambda proc: proc.scheduler.name,
@@ -29,6 +30,7 @@ VERBOSAL_CONFIGS = {
     "cache": None,
     "dirsig": None,
     "size": None,
+    "output_flatten": None,
     "template": lambda proc: proc.template.name,
 }
 
@@ -430,6 +432,9 @@ class PipenVerbose:
             value = getter(proc) if getter else getattr(proc, prop)
             if value is not None and value != proc.pipeline.config.get(prop, None):
                 props[prop] = value
+
+        if props['output_flatten'] is False:
+            del props['output_flatten']
 
         if "size" in props and props["size"] == 1:
             del props["size"]

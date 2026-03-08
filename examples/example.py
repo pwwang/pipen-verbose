@@ -4,6 +4,7 @@ from pipen import Pipen, Proc
 class AProc(Proc):
     input = "a,b:file"
     output = "b:file:{{in.a}}.txt"
+    output_flatten = True
     input_data = [(1, __file__), (2, __file__)]
     envs = {
         "x": "[a]\nb=1\n",
