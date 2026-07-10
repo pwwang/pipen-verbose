@@ -18,6 +18,13 @@ Add verbosal information in logs for [pipen][1].
 pip install -U pipen-verbose
 ```
 
+For development with uv:
+
+```
+uv sync --group dev
+uv run pytest
+```
+
 ## Enabling/Disabling the plugin
 
 The plugin is registered via entrypoints. It's by default enabled. To disable it:
