@@ -55,5 +55,7 @@ jobs:
         run: |
           uv sync --group dev
       - name: Publish to PyPI
-        run: uv publish --build --username ${{ secrets.PYPI_USER }} --password ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          uv build
+          uv publish --username ${{ secrets.PYPI_USER }} --password ${{ secrets.PYPI_PASSWORD }}
         if: success()
