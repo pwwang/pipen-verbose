@@ -495,7 +495,14 @@ class PipenVerbose:
             logger=logger,
         )
 
-        job = proc.jobs[failed_jobs[0]]
+        for j in proc.jobs:
+            if j.index == failed_jobs[0]:
+                job = j
+                break
+        else:  # pragma: no cover
+            # should not happen
+            return
+
         stderr = (
             await job.stderr_file.a_read_text()
             if await job.stderr_file.a_is_file()
